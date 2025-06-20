@@ -3,7 +3,7 @@ import { promisify } from 'util';
 import { execFile } from 'child_process';
 import path from 'path';
 import { createLogger } from '../utils/logger';
-import { sanitizeBotMentions } from '../utils/sanitize';
+import { sanitizeBotMentions, unescapeMarkdown } from '../utils/sanitize';
 import secureCredentials from '../utils/secureCredentials';
 import type {
   ClaudeCommandOptions,
@@ -79,7 +79,8 @@ Since this is a test environment, I'm providing a simulated response. In product
 For real functionality, please configure valid GitHub and Claude API tokens.`;
 
       // Always sanitize responses, even in test mode
-      return sanitizeBotMentions(testResponse);
+      const unescapedResponse = unescapeMarkdown(testResponse);
+      return sanitizeBotMentions(unescapedResponse);
     }
 
     // Build Docker image if it doesn't exist
@@ -194,6 +195,9 @@ For real functionality, please configure valid GitHub and Claude API tokens.`;
           );
         }
       }
+
+      // Unescape any markdown formatting that may have been escaped by Claude
+      responseText = unescapeMarkdown(responseText);
 
       // Sanitize response to prevent infinite loops by removing bot mentions
       responseText = sanitizeBotMentions(responseText);

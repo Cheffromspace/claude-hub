@@ -4,7 +4,8 @@ import {
   sanitizeCommandInput,
   validateRepositoryName,
   validateGitHubRef,
-  sanitizeEnvironmentValue
+  sanitizeEnvironmentValue,
+  unescapeMarkdown
 } from '../../../src/utils/sanitize';
 
 describe('Sanitize Utils', () => {
@@ -177,6 +178,58 @@ describe('Sanitize Utils', () => {
     it('should detect partial key matches', () => {
       expect(sanitizeEnvironmentValue('MY_CUSTOM_TOKEN', 'value')).toBe('[REDACTED]');
       expect(sanitizeEnvironmentValue('DB_PASSWORD_HASH', 'value')).toBe('[REDACTED]');
+    });
+  });
+
+  describe('unescapeMarkdown', () => {
+    it('should unescape escaped newlines', () => {
+      const input = 'Line 1\\nLine 2\\nLine 3';
+      const expected = 'Line 1\nLine 2\nLine 3';
+      expect(unescapeMarkdown(input)).toBe(expected);
+    });
+
+    it('should unescape escaped quotes', () => {
+      const input = 'This is a \\"quoted\\" string and this is a \\\'single quoted\\\' string';
+      const expected = 'This is a "quoted" string and this is a \'single quoted\' string';
+      expect(unescapeMarkdown(input)).toBe(expected);
+    });
+
+    it('should unescape markdown characters', () => {
+      const input = '\\* This is a bullet\\n\\- Another bullet\\n\\# Header\\n\\`code\\`';
+      const expected = '* This is a bullet\n- Another bullet\n# Header\n`code`';
+      expect(unescapeMarkdown(input)).toBe(expected);
+    });
+
+    it('should handle escaped code blocks', () => {
+      const input = '\\`\\`\\`javascript\\nconst x = \\"test\\";\\n\\`\\`\\`';
+      const expected = '```javascript\nconst x = "test";\n```';
+      expect(unescapeMarkdown(input)).toBe(expected);
+    });
+
+    it('should handle mixed markdown escaping', () => {
+      const input =
+        '\\# PR Review\\n\\n\\* Issue: Code has problems\\n\\* Suggestion: Fix them\\n\\n\\`\\`\\`js\\ncode()\\n\\`\\`\\`';
+      const expected =
+        '# PR Review\n\n* Issue: Code has problems\n* Suggestion: Fix them\n\n```js\ncode()\n```';
+      expect(unescapeMarkdown(input)).toBe(expected);
+    });
+
+    it('should handle empty or null input', () => {
+      expect(unescapeMarkdown('')).toBe('');
+      expect(unescapeMarkdown(null as any)).toBe(null);
+      expect(unescapeMarkdown(undefined as any)).toBe(undefined);
+    });
+
+    it('should not modify already correct markdown', () => {
+      const input =
+        '# Header\n\n* Bullet point\n* Another bullet\n\n```javascript\nconst x = "test";\n```';
+      expect(unescapeMarkdown(input)).toBe(input);
+    });
+
+    it('should handle escaped brackets and parentheses', () => {
+      const input = 'Link: \\[text\\]\\(url\\) and another \\[link\\]';
+      const expected = 'Link: [text](url) and another [link]';
+      expect(unescapeMarkdown(input)).toBe(expected);
     });
   });
 });

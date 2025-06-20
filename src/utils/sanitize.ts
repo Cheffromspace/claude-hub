@@ -101,3 +101,43 @@ export function sanitizeEnvironmentValue(key: string, value: string): string {
 
   return isSensitive ? '[REDACTED]' : value;
 }
+
+/**
+ * Unescapes markdown formatting that may have been escaped by Claude
+ * This is a fallback for when Claude escapes markdown despite instructions
+ */
+export function unescapeMarkdown(text: string): string {
+  if (!text) return text;
+
+  // Replace escaped newlines with actual newlines
+  let unescaped = text.replace(/\\n/g, '\n');
+
+  // Replace escaped quotes
+  unescaped = unescaped.replace(/\\"/g, '"');
+  unescaped = unescaped.replace(/\\'/g, "'");
+
+  // Replace escaped backticks (for code blocks)
+  unescaped = unescaped.replace(/\\`/g, '`');
+
+  // Replace escaped backslashes (but be careful not to double-unescape)
+  // Only replace \\ with \ if it's not followed by another escape sequence
+  unescaped = unescaped.replace(/\\\\(?![nrt"`'])/g, '\\');
+
+  // Replace escaped asterisks and other markdown characters
+  unescaped = unescaped.replace(/\\\*/g, '*');
+  unescaped = unescaped.replace(/\\_/g, '_');
+  unescaped = unescaped.replace(/\\-/g, '-');
+  unescaped = unescaped.replace(/\\#/g, '#');
+  unescaped = unescaped.replace(/\\>/g, '>');
+  unescaped = unescaped.replace(/\\\[/g, '[');
+  unescaped = unescaped.replace(/\\\]/g, ']');
+  unescaped = unescaped.replace(/\\\(/g, '(');
+  unescaped = unescaped.replace(/\\\)/g, ')');
+
+  // Log if unescaping occurred
+  if (unescaped !== text) {
+    logger.info('Unescaped markdown formatting in text');
+  }
+
+  return unescaped;
+}

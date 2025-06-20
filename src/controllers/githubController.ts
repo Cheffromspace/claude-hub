@@ -1375,6 +1375,31 @@ Create a single comprehensive review comment with all feedback.
 6. **Complete your review** with an appropriate event type (APPROVE, REQUEST_CHANGES, or COMMENT)
 7. **Include commit SHA** - Always include "Reviewed at commit: ${commitSha}" in your final review comment
 
+## CRITICAL: Markdown Formatting Requirements
+
+**IMPORTANT**: When writing your review comments and responses:
+- Return clean, human-readable markdown that GitHub will render correctly
+- Do NOT escape or encode special characters like newlines (\\n), quotes, or backslashes
+- Use proper markdown syntax directly:
+  - Use actual bullet points: * or - (not escaped versions)
+  - Use actual code blocks with triple backticks (not escaped)
+  - Use actual line breaks (press Enter, don't write \\n)
+  - Use actual quotes " or ' (not escaped versions like \\" or \\')
+- Your output should look like normal markdown text, NOT escaped strings
+- GitHub expects standard markdown - write it naturally as you would in any markdown editor
+
+Example of CORRECT formatting:
+* This is a bullet point
+* Another bullet point with \`inline code\`
+
+\`\`\`javascript
+// This is a code block
+const example = "string";
+\`\`\`
+
+Example of INCORRECT formatting (DO NOT DO THIS):
+\\* This is a bullet point\\n\\* Another bullet point with \\\`inline code\\\`\\n\\n\\\`\\\`\\\`javascript\\n// This is a code block\\nconst example = \\"string\\";\\n\\\`\\\`\\\`
+
 Please perform a comprehensive review of PR #${prNumber} in repository ${repoFullName}.`;
 }
 
