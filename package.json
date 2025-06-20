@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@octokit/rest": "^22.0.0",
-    "axios": "^1.6.2",
+    "axios": "^1.10.0",
     "body-parser": "^2.2.0",
     "commander": "^14.0.0",
     "dotenv": "^16.3.1",
